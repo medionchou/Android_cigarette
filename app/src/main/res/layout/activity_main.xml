@@ -1,0 +1,34 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/running_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#8B1A1A"
+        android:ellipsize="marquee"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
+        android:text=""
+        android:textColor="#00FF00"
+        android:textSize="50sp" />
+
+
+
+    <TableLayout
+        android:id="@+id/recipe_table_layout"
+        android:layout_marginTop="25dp"
+        android:layout_marginLeft="350dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"></TableLayout>
+
+
+
+</LinearLayout>
