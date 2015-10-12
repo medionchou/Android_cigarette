@@ -109,8 +109,8 @@ public class MainActivity extends AppCompatActivity {
     private class RecipeAsyncTask extends AsyncTask<Void, String, Void> {
         ProgressDialog progressDialog;
         List<Recipe> recipeList;
-        String reply;
-        String msg;
+        String reply = "";
+        String msg = "";
 
         @Override
         protected void onPreExecute() {
@@ -133,7 +133,10 @@ public class MainActivity extends AppCompatActivity {
                 client.setCmd(Command.RECIPE_NOW);
                 Thread.sleep(2000);
 
-                reply = client.getQueryReply();
+                while (reply.length() == 0) {
+                    reply = client.getQueryReply();
+                    Thread.sleep(1000);
+                }
 
                 parseRecipeMsg(reply, false);
 

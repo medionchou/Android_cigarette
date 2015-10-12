@@ -158,7 +158,7 @@ public class Client extends Thread {
             Log.e("MyLog", "InterruptedException " + e.toString());
 
         } catch (IOException e) {
-            if (e.toString().contains("Server disconnect") || e.toString().contains("SocketTimeoutException")) {
+            if (e.toString().contains("Server disconnect") || e.toString().contains("SocketTimeoutException") || e.toString().contains("ECONNRESET")) {
                 Log.v("Client", "Reconnect!!");
                 mainActivity.runOnUiThread(
                         new Runnable() {
