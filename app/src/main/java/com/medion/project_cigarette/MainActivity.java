@@ -26,7 +26,10 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -37,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private Client client;
     private RecipeAsyncTask recipeAsyncTask;
 
-    private TextView runningTextView;
+    private MarqueeTextView runningTextView;
     private TableLayout tableLayout;
     private Timer timer;
     ProgressDialog restartDialog;
@@ -46,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        runningTextView = (TextView) findViewById(R.id.running_text_view);
+        runningTextView = (MarqueeTextView) findViewById(R.id.running_text_view);
         tableLayout = (TableLayout) findViewById(R.id.recipe_table_layout);
         tableLayout.setStretchAllColumns(true);
         restartDialog = new ProgressDialog(this);
@@ -111,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
         List<Recipe> recipeList;
         String reply = "";
         String msg = "";
+        String oldMsg = "";
 
         @Override
         protected void onPreExecute() {
@@ -155,13 +159,16 @@ public class MainActivity extends AppCompatActivity {
                         client.resetUpdateMsg();
                     }
 
-                    if (msg.length() > 0) {
-
-                        publishProgress(msg);
-                        client.resetMsg();
+                    if (msg.length() > 0 && !oldMsg.equals(msg)) {
+                        publishProgress(msg, "true");
+                    } else if (msg.length() > 0) {
+                        Calendar cal = Calendar.getInstance();
+                        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                        String date = dateFormat.format(cal.getTime());
+                        publishProgress(msg + date, "false");
                     }
-
-                    Thread.sleep(10000);
+                    oldMsg = msg;
+                    Thread.sleep(1000);
                 }
 
             } catch (InterruptedException e) {
@@ -177,7 +184,11 @@ public class MainActivity extends AppCompatActivity {
                 progressDialog.dismiss();
 
             if (values[0].length() > 0) {
-                runningTextView.setText(values[0]);
+                if (values[1].equals("true"))
+                    runningTextView.setText(values[0]);
+                else if (values[1].equals("false")) {
+                    runningTextView.setNewText(values[0]);
+                }
             } else {
                 updateGui();
             }

@@ -5,7 +5,7 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <TextView
+    <com.medion.project_cigarette.MarqueeTextView
         android:id="@+id/running_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
