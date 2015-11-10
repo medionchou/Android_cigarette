@@ -1,5 +1,6 @@
 package com.medion.project_cigarette;
 
+import android.graphics.Color;
 import android.os.Process;
 import android.util.Log;
 
@@ -125,6 +126,20 @@ public class Client extends Thread {
                             tmp = endLine.replace("<END>", "");
                             tmp = tmp.replace("MSG\t", "");
                             msg = tmp;
+                        } else if (endLine.contains("RECIPE_WRONG")) {
+                            mainActivity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mainActivity.setBackground(Color.RED);
+                                }
+                            });
+                        } else if (endLine.contains("RECIPE_OK")) {
+                            mainActivity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mainActivity.setBackground(Color.WHITE);
+                                }
+                            });
                         }
 
                         serverReply = serverReply.replace(endLine, "");

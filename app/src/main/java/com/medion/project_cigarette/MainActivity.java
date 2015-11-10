@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -23,6 +24,7 @@ import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.Barcode39;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.parser.Line;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -42,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
     private MarqueeTextView runningTextView;
     private TableLayout tableLayout;
+    private LinearLayout linearLayout;
     private Timer timer;
     ProgressDialog restartDialog;
 
@@ -51,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         runningTextView = (MarqueeTextView) findViewById(R.id.running_text_view);
         tableLayout = (TableLayout) findViewById(R.id.recipe_table_layout);
+        linearLayout = (LinearLayout) findViewById(R.id.lineary_layout);
         tableLayout.setStretchAllColumns(true);
         restartDialog = new ProgressDialog(this);
     }
@@ -109,6 +113,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void setBackground(int color) {
+        linearLayout.setBackgroundColor(color);
+    }
+
     private class RecipeAsyncTask extends AsyncTask<Void, String, Void> {
         ProgressDialog progressDialog;
         List<Recipe> recipeList;
@@ -153,9 +161,14 @@ public class MainActivity extends AppCompatActivity {
                     msg = client.getMsg();
 
                     if (reply.length() > 0) {
+                        String[] updateInfo = reply.split("<END>");
 
-                        parseRecipeMsg(reply, true);
-                        publishProgress("");
+                        for (String tmp : updateInfo) {
+                            if (tmp.contains("UPDATE_RECIPE_NOW")) {
+                                parseRecipeMsg(tmp, true);
+                                publishProgress("");
+                            }
+                        }
                         client.resetUpdateMsg();
                     }
 
@@ -167,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
                         String date = dateFormat.format(cal.getTime());
                         publishProgress(msg + date, "false");
                     }
+
                     oldMsg = msg;
                     Thread.sleep(1000);
                 }
@@ -229,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
         private void inflateTextView(Recipe recipe, int indexToInflate) {
 
             TableLayout.LayoutParams tableRowParams = new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, 0, 1);
-            TableRow.LayoutParams textViewParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT);
+            TableRow.LayoutParams textViewParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT);
             TableRow tableRow = new TableRow(MainActivity.this);
             TextView bucketTextView = new TextView(MainActivity.this);
             TextView recipeIdTextView = new TextView(MainActivity.this);
@@ -237,16 +251,18 @@ public class MainActivity extends AppCompatActivity {
 
             tableRow.setLayoutParams(tableRowParams);
             bucketTextView.setLayoutParams(textViewParams);
-            recipeIdTextView.setLayoutParams(textViewParams);
             recipeNameTextView.setLayoutParams(textViewParams);
+            recipeIdTextView.setLayoutParams(textViewParams);
 
             bucketTextView.setText(recipe.getBucketNum());
-            recipeIdTextView.setText(recipe.getRecipeId());
             recipeNameTextView.setText(recipe.getRecipeName());
+            recipeIdTextView.setText(recipe.getRecipeId());
 
             bucketTextView.setTextSize(Config.TEXT_SIZE);
-            recipeIdTextView.setTextSize(Config.TEXT_SIZE);
             recipeNameTextView.setTextSize(Config.TEXT_SIZE);
+            recipeIdTextView.setTextSize(Config.TEXT_SIZE);
+
+            recipeIdTextView.setMaxEms(5);
 
             if (indexToInflate == 0) {
                 TableRow titleRow = new TableRow(MainActivity.this);
@@ -260,24 +276,24 @@ public class MainActivity extends AppCompatActivity {
                 recipeNameTitle.setLayoutParams(textViewParams);
 
                 bucketTitle.setText("桶號");
-                recipeIdTitle.setText("配方編號");
                 recipeNameTitle.setText("配方名稱");
+                recipeIdTitle.setText("配方編號");
 
                 bucketTitle.setTextSize(Config.TEXT_TITLE_SIZE);
-                recipeIdTitle.setTextSize(Config.TEXT_TITLE_SIZE);
                 recipeNameTitle.setTextSize(Config.TEXT_TITLE_SIZE);
+                recipeIdTitle.setTextSize(Config.TEXT_TITLE_SIZE);
 
                 bucketTitle.setTextColor(Color.BLACK);
-                recipeIdTitle.setTextColor(Color.BLACK);
                 recipeNameTitle.setTextColor(Color.BLACK);
+                recipeIdTitle.setTextColor(Color.BLACK);
 
                 bucketTitle.setTypeface(null, Typeface.BOLD);
-                recipeIdTitle.setTypeface(null, Typeface.BOLD);
                 recipeNameTitle.setTypeface(null, Typeface.BOLD);
+                recipeIdTitle.setTypeface(null, Typeface.BOLD);
 
                 titleRow.addView(bucketTitle);
-                titleRow.addView(recipeIdTitle);
                 titleRow.addView(recipeNameTitle);
+                titleRow.addView(recipeIdTitle);
 
                 tableLayout.addView(titleRow);
             }
