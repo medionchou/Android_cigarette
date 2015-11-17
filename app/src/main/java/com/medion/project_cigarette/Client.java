@@ -1,5 +1,6 @@
 package com.medion.project_cigarette;
 
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Process;
 import android.util.Log;
@@ -19,8 +20,8 @@ import java.util.List;
  */
 public class Client extends Thread {
 
-    private final String SERVER_IP = "140.113.167.14";
-    private final int SERVER_PORT = 9000;
+    private String SERVER_IP = "140.113.167.14";
+    private int SERVER_PORT = 9000;
 
     private SocketChannel socketChannel;
     private ByteBuffer inputBuffer;
@@ -37,8 +38,8 @@ public class Client extends Thread {
     private int client_state;
 
     public Client(MainActivity mainActivity) {
-        initObject();
         this.mainActivity = mainActivity;
+        initObject();
     }
 
     @Override
@@ -58,6 +59,10 @@ public class Client extends Thread {
         msg = "";
         buffer = new ArrayList<>();
         inputBuffer.clear();
+
+        SharedPreferences settings = mainActivity.getSharedPreferences("IPFILE", 0);
+        SERVER_IP = settings.getString("IP", "140.113.167.14");
+        SERVER_PORT = settings.getInt("PORT", 9000);
     }
 
 

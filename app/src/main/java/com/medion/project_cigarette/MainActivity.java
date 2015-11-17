@@ -1,33 +1,26 @@
 package com.medion.project_cigarette;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.Barcode39;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfWriter;
-import com.itextpdf.text.pdf.parser.Line;
-
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -35,6 +28,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -57,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
         linearLayout = (LinearLayout) findViewById(R.id.lineary_layout);
         tableLayout.setStretchAllColumns(true);
         restartDialog = new ProgressDialog(this);
+
     }
 
     @Override
@@ -85,6 +81,81 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                final LinearLayout ip_portLayout = (LinearLayout)getLayoutInflater().inflate(R.layout.ip_port_layout, null);
+                builder.setTitle("設定IP及PORT");
+                builder.setView(ip_portLayout);
+
+                builder.setPositiveButton("確認", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        SharedPreferences settings = getSharedPreferences("IPFILE", 0);
+                        SharedPreferences.Editor editor = settings.edit();
+                        EditText ipView = (EditText) ip_portLayout.findViewById(R.id.ip);
+                        EditText portView = (EditText) ip_portLayout.findViewById(R.id.port);
+                        String ipTest = ipView.getText().toString();
+                        String portTest = portView.getText().toString();
+                        String ip = "127.0.0.1";
+                        Pattern pattern = Pattern.compile("[0-9]{1,3}+.[0-9]{1,3}+.[0-9]{1,3}+.[0-9]{1,3}+");
+                        Matcher matcher = pattern.matcher(ipTest);
+                        int port = 0;
+                        boolean checker = false;
+
+                        if (!portTest.equals("")) {
+                            if (Integer.valueOf(portTest) <= 65536) {
+                                port = Integer.valueOf(portTest);
+                                checker = true;
+                            }
+                        }
+
+                        checker = matcher.matches();
+
+                        if (matcher.matches()) {
+                            String[] strip = ipTest.split("\\.");
+                            boolean isMatch = true;
+
+                            for (String tmp : strip) {
+                                if (Integer.valueOf(tmp) > 255)
+                                    isMatch = false;
+                            }
+
+                            if (isMatch)
+                                ip = ipTest;
+
+                            checker |= isMatch;
+                        }
+
+                        if (checker) {
+                            editor.putString("IP", ip);
+                            editor.putInt("PORT", port);
+                            editor.apply();
+                        } else {
+                            AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+                            alert.setTitle("警告");
+                            alert.setMessage("IP 或 PORT 設定錯誤");
+                            alert.show();
+                        }
+                    }
+                });
+                builder.show();
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void defRefObject() {
@@ -123,6 +194,7 @@ public class MainActivity extends AppCompatActivity {
         String reply = "";
         String msg = "";
         String oldMsg = "";
+        int count = 0;
 
         @Override
         protected void onPreExecute() {
@@ -133,6 +205,24 @@ public class MainActivity extends AppCompatActivity {
             progressDialog.setMessage("取得資料中");
             progressDialog.show();
             progressDialog.setCancelable(false);
+            progressDialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                @Override
+                public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                    String msg = ((TextView)progressDialog.findViewById(android.R.id.message)).getText().toString();
+
+                    if (keyCode == KeyEvent.KEYCODE_BACK) {
+                        if (count == 40) {
+                            count = 0;
+                            dialog.dismiss();
+                        } else {
+                            count++;
+                        }
+                    }
+
+
+                    return false;
+                }
+            });
         }
 
         @Override
