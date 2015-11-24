@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
         linearLayout = (LinearLayout) findViewById(R.id.lineary_layout);
         tableLayout.setStretchAllColumns(true);
         restartDialog = new ProgressDialog(this);
+        timer = new Timer();
 
     }
 
@@ -96,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_settings:
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                final LinearLayout ip_portLayout = (LinearLayout)getLayoutInflater().inflate(R.layout.ip_port_layout, null);
+                final LinearLayout ip_portLayout = (LinearLayout) getLayoutInflater().inflate(R.layout.ip_port_layout, null);
                 builder.setTitle("設定IP及PORT");
                 builder.setView(ip_portLayout);
 
@@ -110,21 +111,25 @@ public class MainActivity extends AppCompatActivity {
                         String ipTest = ipView.getText().toString();
                         String portTest = portView.getText().toString();
                         String ip = "127.0.0.1";
-                        Pattern pattern = Pattern.compile("[0-9]{1,3}+.[0-9]{1,3}+.[0-9]{1,3}+.[0-9]{1,3}+");
+                        Pattern pattern = Pattern.compile("[0-9]{1,3}+\\.[0-9]{1,3}+\\.[0-9]{1,3}+\\.[0-9]{1,3}+");
                         Matcher matcher = pattern.matcher(ipTest);
                         int port = 0;
-                        boolean checker = false;
-
-                        if (!portTest.equals("")) {
-                            if (Integer.valueOf(portTest) <= 65536) {
-                                port = Integer.valueOf(portTest);
-                                checker = true;
-                            }
-                        }
+                        boolean checker;
 
                         checker = matcher.matches();
 
-                        if (matcher.matches()) {
+                        if (checker) {
+                            if (!portTest.equals("")) {
+                                if (Integer.valueOf(portTest) <= 65536) {
+                                    port = Integer.valueOf(portTest);
+                                    checker = true;
+                                } else {
+                                    checker = false;
+                                }
+                            }
+                        }
+
+                        if (checker) {
                             String[] strip = ipTest.split("\\.");
                             boolean isMatch = true;
 
@@ -136,8 +141,9 @@ public class MainActivity extends AppCompatActivity {
                             if (isMatch)
                                 ip = ipTest;
 
-                            checker |= isMatch;
+                            checker = isMatch;
                         }
+
 
                         if (checker) {
                             editor.putString("IP", ip);
@@ -175,12 +181,12 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 if (restartDialog.isShowing())
                     restartDialog.dismiss();
-                Intent intent = new Intent();
+                Intent intent = getIntent();
                 finish();
                 startActivity(intent);
 
             }
-        }, 10000);
+        }, 5000);
 
     }
 
@@ -208,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
             progressDialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
                 @Override
                 public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                    String msg = ((TextView)progressDialog.findViewById(android.R.id.message)).getText().toString();
+                    String msg = ((TextView) progressDialog.findViewById(android.R.id.message)).getText().toString();
 
                     if (keyCode == KeyEvent.KEYCODE_BACK) {
                         if (count == 40) {
@@ -356,7 +362,7 @@ public class MainActivity extends AppCompatActivity {
 
             if (indexToInflate == 0) {
                 TableRow titleRow = new TableRow(MainActivity.this);
-                TextView bucketTitle= new TextView(MainActivity.this);
+                TextView bucketTitle = new TextView(MainActivity.this);
                 TextView recipeIdTitle = new TextView(MainActivity.this);
                 TextView recipeNameTitle = new TextView(MainActivity.this);
 
