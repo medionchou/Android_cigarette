@@ -59,22 +59,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
         if (client == null) {
             client = new Client(this);
             client.start();
         }
-        recipeAsyncTask = new RecipeAsyncTask();
-        recipeAsyncTask.execute((Void) null);
 
+        recipeAsyncTask = new RecipeAsyncTask();
+        recipeAsyncTask.execute((Void)null);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        client.setTerminated();
+
+        recipeAsyncTask.cancelDialog();
         if (!recipeAsyncTask.isCancelled())
             recipeAsyncTask.cancel(true);
+
+        client.setTerminated();
         defRefObject();
     }
 
@@ -234,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... params) {
             try {
+
                 while (client.getClientState() != States.CONNECT_OK) {
                     Thread.sleep(1000);
                 }
@@ -288,6 +291,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            if (progressDialog.isShowing())
+                progressDialog.dismiss();
+        }
+
+        @Override
         protected void onProgressUpdate(String... values) {
             super.onProgressUpdate(values);
             if (progressDialog.isShowing())
@@ -302,6 +312,11 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 updateGui();
             }
+        }
+
+        public void cancelDialog() {
+            if (progressDialog.isShowing())
+                progressDialog.cancel();
         }
 
         private void parseRecipeMsg(String recipeMsg, boolean update) {
